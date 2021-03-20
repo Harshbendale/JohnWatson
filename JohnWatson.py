@@ -153,7 +153,7 @@ def start_browser(new_link):
 	print('returning from function start_browser')
 	return driver,all_windows,windows_names_dict
 
-# update the list of tabs that are open in googel chrome:
+# update the list of tabs that are open in google chrome:
 def update_windows_list(new_tab_name,windows_names_dict):
 	all_windows = driver.window_handles
 	print(list(windows_names_dict.values()))
@@ -190,6 +190,56 @@ def adjust_pc_volume(vol,pc_volume):
 			keyboard.release(Key.media_volume_down)
 		pc_volume = pc_volume - ((vol_tens*2)+(vol_units*2))
 	return pc_volume
+
+# clear "I Agree" pop-up from google:
+def click_i_agree(i_agree):
+	while i_agree == False:
+		retry_counter = 0
+		# clicking "I Agree" button:
+		try:
+			try:
+				print('searching I Agree btn in german format')
+				WebDriverWait(driver, 1).until(EC.frame_to_be_available_and_switch_to_it((By.XPATH,"/html/body/div[7]/div[2]/div[6]/div/div[2]/span/div/div/iframe")))
+				print('switching to iframe')
+				WebDriverWait(driver, 2).until(EC.element_to_be_clickable((By.CSS_SELECTOR, "div#introAgreeButton"))).click()
+				i_agree = True
+				driver.switch_to.default_content()
+			except:
+				print('not found')
+				retry_counter += 1
+				if retry_counter == 10:
+					break
+			print('searching I Agree btn in regular format now')
+			WebDriverWait(driver, 1).until(EC.frame_to_be_available_and_switch_to_it((By.CSS_SELECTOR,"iframe#iframe")))
+			print('switching to iframe')
+			WebDriverWait(driver, 2).until(EC.element_to_be_clickable((By.CSS_SELECTOR, "div#introAgreeButton"))).click()
+			i_agree = True
+			driver.switch_to.default_content()
+		except:
+			print('no IAgree found')
+			retry_counter += 1
+			if retry_counter == 10:
+				driver.switch_to.default_content()
+				break
+	return i_agree
+
+def click_no_thanks(no_thanks):
+	while no_thanks == False:
+		retry_counter = 0
+		# clicking "No Thanks" button:
+		try:
+			print('finding NOTHANKS')
+			WebDriverWait(driver, 1).until(EC.element_to_be_clickable((By.XPATH, "/html/body/ytd-app/ytd-popup-container/tp-yt-paper-dialog/yt-upsell-dialog-renderer/div/div[3]/div[1]/yt-button-renderer/a/paper-button"))).click()
+			driver.switch_to.default_content()
+			driver.find_element_by_tag_name('body').send_keys('k')
+			print("SWITCHED TO BODY")
+			no_thanks = True
+		except:
+			print('no NoThanks found')
+			retry_counter += 1
+			if retry_counter == 10:
+				break
+	return no_thanks
 
 ### Main function:
 if __name__ == '__main__':
@@ -319,6 +369,8 @@ if __name__ == '__main__':
 			speak('and {} today'.format(sky_now[sky[0].get_attribute('innerHTML')]))
 			speak('with a wind speed of {}'.format(wind[0].get_attribute('innerHTML')))
 			driver.maximize_window()
+			if i_agree == False:
+				i_agree = click_i_agree(i_agree)
 			if 'youtube' in list(windows_names_dict.keys()):
 				driver.find_element_by_tag_name('body').send_keys(Keys.CONTROL + 'w')
 				driver.switch_to_window(windows_names_dict['youtube'])
@@ -348,34 +400,8 @@ if __name__ == '__main__':
 				pop_ups_clean = False
 				driver,all_windows,windows_names_dict = start_browser(youtube_link)
 			# clear "I Agree" pop-up from google:
-			while i_agree == False:
-				retry_counter = 0
-				# clicking "I Agree" button:
-				try:
-					try:
-						print('searching I Agree btn in german format')
-						WebDriverWait(driver, 1).until(EC.frame_to_be_available_and_switch_to_it((By.XPATH,"/html/body/div[7]/div[2]/div[6]/div/div[2]/span/div/div/iframe")))
-						print('switching to iframe')
-						WebDriverWait(driver, 2).until(EC.element_to_be_clickable((By.CSS_SELECTOR, "div#introAgreeButton"))).click()
-						i_agree = True
-						driver.switch_to.default_content()
-					except:
-						print('not found')
-						retry_counter += 1
-						if retry_counter == 10:
-							break
-					print('searching I Agree btn in regular format now')
-					WebDriverWait(driver, 1).until(EC.frame_to_be_available_and_switch_to_it((By.CSS_SELECTOR,"iframe#iframe")))
-					print('switching to iframe')
-					WebDriverWait(driver, 2).until(EC.element_to_be_clickable((By.CSS_SELECTOR, "div#introAgreeButton"))).click()
-					i_agree = True
-					driver.switch_to.default_content()
-				except:
-					print('no IAgree found')
-					retry_counter += 1
-					if retry_counter == 10:
-						driver.switch_to.default_content()
-						break
+			if i_agree == False:
+				i_agree = click_i_agree(i_agree)
 			# click the first video in the list of querry hits:
 			if driver.find_elements_by_xpath('//*[@id="ad-badge-container"]/ytd-badge-supported-renderer/div/span'):
 				print('ad found,\n now clicking second video')
@@ -388,26 +414,9 @@ if __name__ == '__main__':
 				print('first video clicked!')
 			driver.maximize_window()
 			time.sleep(1)
-			# Skipping ads and bypassing Youtube sign-in pop-up in google chrome:
-			while no_thanks == False:
-				# clicking "No Thanks" button:
-				try:
-					print('finding NOTHANKS')
-					WebDriverWait(driver, 1).until(EC.element_to_be_clickable((By.XPATH, "/html/body/ytd-app/ytd-popup-container/tp-yt-paper-dialog/yt-upsell-dialog-renderer/div/div[3]/div[1]/yt-button-renderer/a/paper-button"))).click()
-					driver.switch_to.default_content()
-					driver.find_element_by_tag_name('body').send_keys('k')
-					print("SWITCHED TO BODY")
-					no_thanks = True
-				except:
-					print('no NoThanks found')
-					retry_counter += 1
-					if retry_counter == 10:
-						break
-				print("retry_counter: ",retry_counter)
-				print("i_agree: ",i_agree)
-				print("no_thanks: ",no_thanks)
-				pop_ups_clean = i_agree and no_thanks
-				print("pop_ups_clean :", pop_ups_clean)			
+			# Bypassing Youtube sign-in pop-up in google chrome:
+			if no_thanks == False:
+				no_thanks = click_no_thanks(no_thanks)			
 
 		# Ask him to play/pause the YouTube video in google chrome:
 		elif 'play video' in query or 'play my video' in query or 'play the song' in query or 'continue playing' in query or 'pause' in query or query == 'stop':
@@ -465,7 +474,7 @@ if __name__ == '__main__':
 			speak(np.random.choice(['ok sir','yes sir','sure sir']))
 			speak('window switched')
 
-		# Ask him to adjust volume of google chrome browser:
+		# Ask him to adjust volume of PC:
 		elif 'volume' in query:
 			temp_vol_query = query.split()
 			if len(temp_vol_query)>1:
