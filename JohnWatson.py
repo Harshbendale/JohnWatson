@@ -29,25 +29,16 @@ import cv2
 import JW_functions as jw_fn
 import JW_features as jw_ft
 
-### Declaring global variables: 
-# to access the same chrome web driver:
-global driver
+### Declaring variables: 
 # for handling of tabs in chrome:
-global all_windows
 all_windows = []
-global windows_names_dict
 windows_names_dict = {}
 # to handle google pop-ups:
-global pop_ups_clean
-pop_ups_clean = False
-global i_agree
 i_agree = False
-global no_thanks
 no_thanks = False
-# PC Volume
-global pc_volume
+# to control volume:
 pc_volume = 50
-
+# to control keyboard:
 keyboard = Controller()
 
 ### Main function:
@@ -207,7 +198,6 @@ if __name__ == '__main__':
 				jw_fn.speak('sure sir, opening youtube now')
 				i_agree = False
 				no_thanks = False
-				pop_ups_clean = False
 				driver,all_windows,windows_names_dict = jw_ft.start_browser(youtube_link)
 			# clear "I Agree" pop-up from google:
 			if i_agree == False:
