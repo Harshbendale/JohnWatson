@@ -9,6 +9,9 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.keys import Keys
 from pynput.keyboard import Key
 
+#from pynput import keyboard
+import time
+
 ### Features of JW:
 # to note down something in Notepad:
 def note(text):
@@ -24,7 +27,7 @@ def start_browser(new_link):
 	driver.get(new_link)
 	all_windows = driver.window_handles
 	windows_names_dict = {}
-	if driver.title == 'weather outside - Google-Suche':
+	if "weather" in driver.title:
 		windows_names_dict['weather'] = driver.current_window_handle
 	else:
 		windows_names_dict['youtube'] = driver.current_window_handle
@@ -73,52 +76,62 @@ def adjust_pc_volume(vol,pc_volume,keyboard):
 	return pc_volume
 
 # clear "I Agree" pop-up from google:
-def click_i_agree(i_agree,driver):
-	retry_counter = 0
+def click_i_agree_youtube(i_agree,keyboard):
 	while i_agree == False:
-		# clicking "I Agree" button:
+		time.sleep(1)
 		try:
-			try:
-				print('searching I Agree btn in german format')
-				WebDriverWait(driver, 1).until(EC.frame_to_be_available_and_switch_to_it((By.XPATH,"/html/body/div[7]/div[2]/div[6]/div/div[2]/span/div/div/iframe")))
-				print('switching to iframe')
-				WebDriverWait(driver, 2).until(EC.element_to_be_clickable((By.CSS_SELECTOR, "div#introAgreeButton"))).click()
-				i_agree = True
-				driver.switch_to.default_content()
-			except:
-				print('not found')
-				retry_counter += 1
-				if retry_counter == 10:
-					break
-			print('searching I Agree btn in regular format now')
-			WebDriverWait(driver, 1).until(EC.frame_to_be_available_and_switch_to_it((By.CSS_SELECTOR,"iframe#iframe")))
-			print('switching to iframe')
-			WebDriverWait(driver, 2).until(EC.element_to_be_clickable((By.CSS_SELECTOR, "div#introAgreeButton"))).click()
+			with keyboard.pressed(Key.ctrl):
+				keyboard.press('f')
+				keyboard.release('f')
+			time.sleep(1)
+			keyboard.type("I agree")
+			time.sleep(1)
+			keyboard.press(Key.esc)
+			keyboard.release(Key.esc)
+			time.sleep(1)
+			keyboard.press(Key.enter)
+			keyboard.release(Key.enter)
 			i_agree = True
-			driver.switch_to.default_content()
+			return i_agree
 		except:
-			print('no IAgree found')
-			retry_counter += 1
-			if retry_counter == 10:
-				driver.switch_to.default_content()
-				break
-	return i_agree
+			print("Failed to find 'I agree'")
+
+def click_i_agree_google(i_agree,keyboard):
+	while i_agree == False:
+		time.sleep(1)
+		try:
+			with keyboard.pressed(Key.ctrl):
+				keyboard.press('f')
+				keyboard.release('f')
+			time.sleep(1)
+			keyboard.type("Ich stimme zu")
+			time.sleep(1)
+			keyboard.press(Key.esc)
+			keyboard.release(Key.esc)
+			time.sleep(1)
+			keyboard.press(Key.enter)
+			keyboard.release(Key.enter)
+			i_agree = True
+			return i_agree
+		except:
+			print("Failed to find 'I agree'")
 
 # clicking "No Thanks" google pop-up in google chrome:
 def click_no_thanks(no_thanks,driver):
-	retry_counter = 0
+	print('Clearing sign-in suggestion')
 	while no_thanks == False:
 		# clicking "No Thanks" button:
 		try:
-			print('finding NOTHANKS')
-			WebDriverWait(driver, 1).until(EC.element_to_be_clickable((By.XPATH, "/html/body/ytd-app/ytd-popup-container/tp-yt-paper-dialog/yt-upsell-dialog-renderer/div/div[3]/div[1]/yt-button-renderer/a/paper-button"))).click()
+			WebDriverWait(driver, 1).until(EC.frame_to_be_available_and_switch_to_it((By.XPATH,"/html/body/iframe[1]")))
+			driver.find_element_by_xpath("/html/body/ytd-app/ytd-popup-container/tp-yt-paper-dialog/yt-upsell-dialog-renderer/div/div[3]/div[1]/yt-button-renderer/a/tp-yt-paper-button/yt-formatted-string").click()
 			driver.switch_to.default_content()
 			driver.find_element_by_tag_name('body').send_keys('k')
-			print("SWITCHED TO BODY")
 			no_thanks = True
+			print("Sign in suggestion skipped")
 		except:
-			print('no NoThanks found')
-			retry_counter += 1
-			if retry_counter == 10:
-				break
+			pass
 	return no_thanks
+
+# starting Youtube for first time:
+def start_youtube():
+	pass

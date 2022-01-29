@@ -1,27 +1,21 @@
 """
-Project Voice Assistant
+Project Voice Assistant : John Watson
 Name: John Watson
 @author: Harshal Bendale
 """
 
 ### Imports:
 # general imports:
-import wikipedia
-import requests
 import numpy as np
-from youtube_search import YoutubeSearch
 from pynput.keyboard import Key,Controller
 import time
 import os
+import datetime
 # imports for audio processing:
 from playsound import playsound
 # google's speechrecognition library:
 import speech_recognition as sr
 # imports for browser automation (selenium):
-from selenium import webdriver
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.keys import Keys
 # imports for camera:
 import cv2
@@ -37,31 +31,25 @@ windows_names_dict = {}
 i_agree = False
 no_thanks = False
 # to control volume:
-pc_volume = 50
+pc_volume = 70
 # to control keyboard:
 keyboard = Controller()
 
 ### Main function:
 if __name__ == '__main__':
-	for i in range(50):
-		keyboard.press(Key.media_volume_down)
-		keyboard.release(Key.media_volume_down)
-	for i in range(25):
-		keyboard.press(Key.media_volume_up)
-		keyboard.release(Key.media_volume_up)
-	playsound("Audio//Boot_soundclip.mp3")
+	jw_fn.audio_settings_on_start(keyboard, Key, playsound)
 	jw_fn.wishMe()
 	while True:
 		### Loop routines before taking command:
 		# to adjust mic:
 		if jw_fn.process_exists('chrome.exe') == True:
 			if 'youtube' in list(windows_names_dict.keys()):
-				pass
 				jw_fn.adjustmic()
 		
 		# to give command to John:
 		query = jw_fn.takeCommand().lower()
-
+		
+		################################################################################################################################
 		### General conversation querries:
 		# general_conversation1 (How are you?):
 		if 'how are you johnny' in query or 'how are you' in query:
@@ -98,7 +86,7 @@ if __name__ == '__main__':
 
 		# general_conversation5 (Asking his name):
 		elif query == 'what is your name' or query=="what's your name":
-			name_text = np.random.choice(['you can call me John or Johnny','its John Watson,Sir','You might have missed it in the begining, its John Watson, sir!'])
+			name_text = np.random.choice(['you can call me John','its John Watson,Sir','You might have missed it in the begining, its John Watson, sir!'])
 			jw_fn.speak(name_text)
 		
 		# general_conversation6 (introduce him to someone):
@@ -137,6 +125,7 @@ if __name__ == '__main__':
 		elif 'do me a favour' in query:
 			jw_fn.speak(np.random.choice(['any time sir, just tell me what you would want me to do','definitely sir, tell me how I can help','sure sir, what is it?']))
 
+		################################################################################################################################
 		### Task querries:
 		# Ask for time:
 		elif 'the time' in query:
@@ -159,6 +148,9 @@ if __name__ == '__main__':
 				jw_ft.update_windows_list('weather',windows_names_dict,driver)
 			else:
 				driver,all_windows,windows_names_dict = jw_ft.start_browser(weather_link)
+			
+			if i_agree == False:
+				i_agree = jw_ft.click_i_agree_google(i_agree,keyboard)
 			temperature_span = driver.find_elements_by_xpath('//*[@id="wob_tm"]')
 			sky = driver.find_elements_by_xpath('//*[@id="wob_dc"]')
 			sky_now = {'Schneeschauer':'Snow showers','Regen':'rainy','Überwiegend bewölkt':'Mostly cloudy','Nebel':'its foggy','Stark bewölkt':'the sky is densly cloudy','Klar und vereinzelt Wolken':'we have clear sky with isolated clouds','Wolkenlos':'we have a clear sky','Überwiegend sonnig':'Mostly Sunny','Teils bewölkt':'it is partly cloudy','Sonnig':'it is sunny','Leichte Regenschauer':'there can be Light rain showers'}
@@ -168,8 +160,6 @@ if __name__ == '__main__':
 			jw_fn.speak('and {} today'.format(sky_now[sky[0].get_attribute('innerHTML')]))
 			jw_fn.speak('with a wind speed of {}'.format(wind[0].get_attribute('innerHTML')))
 			driver.maximize_window()
-			if i_agree == False:
-				i_agree = jw_ft.click_i_agree(i_agree,driver)
 			if 'youtube' in list(windows_names_dict.keys()):
 				driver.find_element_by_tag_name('body').send_keys(Keys.CONTROL + 'w')
 				driver.switch_to_window(windows_names_dict['youtube'])
@@ -184,16 +174,19 @@ if __name__ == '__main__':
 			youtube_link = 'https://youtube.com/search?q={}'.format(query)
 			# check if google chrome is already open, else start from scratch:
 			if jw_fn.process_exists('chrome.exe') == True:
+				# open youtube in same tab:
 				if 'youtube.com' in driver.current_url:
 					jw_fn.speak('sure sir, playing it in same tab now')
 					driver.get('https://youtube.com/search?q={}'.format(query))
+				# open youtube in new tab:
 				else:
 					jw_fn.speak('sure sir, opening youtube in new tab now')
 					driver.execute_script("window.open('https://youtube.com')")
 					jw_ft.update_windows_list('youtube',windows_names_dict,driver)
-					if no_thanks == False:
-						no_thanks = jw_ft.click_no_thanks(no_thanks,driver)
+					# if no_thanks == False:
+					# 	no_thanks = jw_ft.click_no_thanks(no_thanks,driver)
 					driver.get(youtube_link)
+			# starting browser and opening youtube from scratch:
 			else:
 				jw_fn.speak('sure sir, opening youtube now')
 				i_agree = False
@@ -201,35 +194,35 @@ if __name__ == '__main__':
 				driver,all_windows,windows_names_dict = jw_ft.start_browser(youtube_link)
 			# clear "I Agree" pop-up from google:
 			if i_agree == False:
-				i_agree = jw_ft.click_i_agree(i_agree,driver)
-			# click the first video in the list of querry hits:
+				i_agree = jw_ft.click_i_agree_youtube(i_agree,keyboard)
+				print("value of i agree = ", i_agree)
+			# clicking second video if first one is an ad:
 			if driver.find_elements_by_xpath('//*[@id="ad-badge-container"]/ytd-badge-supported-renderer/div/span'):
 				print('ad found,\n now clicking second video')
 				second_video = driver.find_elements_by_xpath('/html/body/ytd-app/div/ytd-page-manager/ytd-search/div[1]/ytd-two-column-search-results-renderer/div/ytd-section-list-renderer/div[2]/ytd-item-section-renderer/div[3]/ytd-video-renderer[1]/div[1]/ytd-thumbnail/a/yt-img-shadow')
 				second_video[0].click()
+			# click the first video in the list of querry hits:
 			else:
-				first_video = driver.find_elements_by_xpath('//*[@id="thumbnail"]')
 				driver.switch_to.default_content()
+				first_video = driver.find_elements_by_xpath('/html/body/ytd-app/div/ytd-page-manager/ytd-search/div[1]/ytd-two-column-search-results-renderer/div/ytd-section-list-renderer/div[2]/ytd-item-section-renderer/div[3]/ytd-video-renderer[1]/div[1]/ytd-thumbnail/a')
 				first_video[0].click()
 				print('first video clicked!')
 			driver.maximize_window()
 			time.sleep(1)
-			# Bypassing Youtube sign-in pop-up in google chrome:
-			if no_thanks == False:
-				no_thanks = jw_ft.click_no_thanks(no_thanks,driver)			
 
 		# Ask him to play/pause the YouTube video in google chrome:
 		elif 'play video' in query or 'play my video' in query or 'play the song' in query or 'continue playing' in query or 'pause' in query or query == 'stop':
 			if jw_fn.process_exists('chrome.exe') == True:
 				if 'youtube.com' in driver.current_url:
 					driver.find_element_by_tag_name('body').send_keys('k')
+					jw_fn.speak(np.random.choice(['sure sir','yes sir','ok sir']))
 				elif 'youtube.com' in windows_names_dict.keys():
 					jw_ft.switch_tab_driver('youtube',windows_names_dict,driver)
 					play_button = driver.find_elements_by_xpath('//*[@id="movie_player"]/div[27]/div[2]/div[1]/button/svg')
 					play_button.click()
-				jw_fn.speak(np.random.choice(['sure sir','yes sir','ok sir']))
-			else:
-				jw_fn.speak('Sorry Sir, youtube is not opened in any tab')
+					jw_fn.speak(np.random.choice(['sure sir','yes sir','ok sir']))
+				else:
+					jw_fn.speak('Sorry Sir, youtube is not opened in any tab')
 
 		# Ask to play next song/video on YouTube in google chrome:
 		elif 'next' in query or 'change song' in query:
@@ -246,6 +239,78 @@ if __name__ == '__main__':
 				except:
 					jw_fn.speak("sir, this browser was not opened by me, so I have no access to it")
 					jw_fn.speak("Please ask me to close this browser and start a new session")
+		
+		# Ask to play my songs playlist on YouTube:
+		elif 'my songs' in query:
+			jw_fn.speak("Sure sir, which playlist?")
+			accept_count = 0
+			youtube_link = ''
+			while True:
+				mysong_query = jw_fn.takeCommand().lower()
+				print("mysong_query: ",mysong_query)
+				if 'hindi' in mysong_query:
+					youtube_link = 'https://www.youtube.com/watch?v=YR12Z8f1Dh8&list=PLziXWRw7-BE3oN7WpHG_G88QIT3dkj8QK&index=2&t=0s'
+					break
+				elif 'english' in mysong_query:
+					youtube_link = 'https://www.youtube.com/watch?v=AEVaK0e1kTE&list=PLziXWRw7-BE1N1aKpGB66uCVwngR3Jl5i&index=1'
+					break
+				elif 'mix 1' in mysong_query or '1' in mysong_query or 'first' in mysong_query:
+					youtube_link = 'https://www.youtube.com/watch?v=pXRviuL6vMY&list=RDpXRviuL6vMY'
+					break
+				elif 'mix 2' in mysong_query or '2' in mysong_query or 'second' in mysong_query:
+					youtube_link = 'https://www.youtube.com/watch?v=fKopy74weus&list=RDfKopy74weus'
+					break
+				elif 'mix 3' in mysong_query or '3' in mysong_query or 'third' in mysong_query:
+					youtube_link = 'https://www.youtube.com/watch?v=S7LCkEJcEag&list=RDS7LCkEJcEag'
+					break
+				else:
+					accept_count += 1
+					if accept_count == 3:
+						jw_fn.speak("sorry sir, still could not get you. Try saying play my songs again")
+						youtube_link = ''
+						break
+					jw_fn.speak("sorry sir, could you please repeat?")
+
+			if youtube_link != '':
+				if jw_fn.process_exists('chrome.exe') == True:
+					if 'youtube.com' in driver.current_url:
+						jw_fn.speak('sure sir, playing it in same tab now')
+						driver.get(youtube_link)
+					else:
+						jw_fn.speak('sure sir, opening youtube in new tab now')
+						driver.execute_script("window.open('https://youtube.com')")
+						jw_ft.update_windows_list('youtube',windows_names_dict,driver)
+						driver.get(youtube_link)
+					if i_agree == False:
+						i_agree = jw_ft.click_i_agree_youtube(i_agree,keyboard)
+					# if no_thanks == False:
+					# 	no_thanks = jw_ft.click_no_thanks(no_thanks,driver)
+				else:
+					jw_fn.speak('sure sir, opening youtube now')
+					i_agree = False
+					no_thanks = False
+					driver,all_windows,windows_names_dict = jw_ft.start_browser(youtube_link)
+					i_agree = jw_ft.click_i_agree_youtube(i_agree,keyboard)
+					# no_thanks = jw_ft.click_no_thanks(no_thanks,driver)
+				try:
+					yt_red_button = driver.find_elements_by_xpath('//*[@id="movie_player"]/div[5]/button')[0]
+					yt_red_button.click()
+				except:
+					print("no red play button found")
+					pass
+				driver.maximize_window()
+
+		# Ask to shuffle playlist
+		elif 'shuffle playlist' in query:
+			if jw_fn.process_exists('chrome.exe') == True:
+				if 'youtube.com' in driver.current_url:
+					try:
+						shuffle_button3 = driver.find_elements_by_xpath('/html/body/ytd-app/div/ytd-page-manager/ytd-watch-flexy/div[4]/div[2]/div/ytd-playlist-panel-renderer/div/div[1]/div/div[2]/div[1]/div[1]/ytd-menu-renderer/div/ytd-toggle-button-renderer[2]/a/yt-icon-button/button')
+						shuffle_button3[0].click()
+						jw_fn.speak("shuffling toggled")
+						print("shuffling toggled")
+					except:
+						jw_fn.speak("sorry sir, this is not a playlist that can be shuffled")
 
 		# Ask him to close the current tab in google chrome
 		elif 'close tab' in query or 'close the tab' in query:
@@ -282,7 +347,7 @@ if __name__ == '__main__':
 						keyboard.release(Key.media_volume_mute)
 					elif vol_str == "half":
 						pc_volume = jw_ft.adjust_pc_volume(50,pc_volume,keyboard)
-					elif vol_str == "full" or vol_str == "max":
+					elif vol_str == "full" or "max" in vol_str:
 						pc_volume = jw_ft.adjust_pc_volume(100,pc_volume,keyboard)
 					elif "%" in vol_str:
 						pc_volume = jw_ft.adjust_pc_volume(int(vol_str[:-1])%100,pc_volume,keyboard)
@@ -318,66 +383,6 @@ if __name__ == '__main__':
 					print("{} Image saved!".format(img_name))
 			cam.release()
 			cv2.destroyAllWindows()
-
-		# Ask to play my songs playlist on YouTube:
-		elif 'my songs' in query:
-			jw_fn.speak("Sure sir, which playlist?")
-			accept_count = 0
-			youtube_link = ''
-			while True:
-				mysong_query = jw_fn.takeCommand().lower
-				print(mysong_query)
-				if 'hindi' in mysong_query:
-					youtube_link = 'https://www.youtube.com/watch?v=YR12Z8f1Dh8&list=PLziXWRw7-BE3oN7WpHG_G88QIT3dkj8QK&index=2&t=0s'
-					break
-				elif 'english' in mysong_query:
-					youtube_link = 'https://www.youtube.com/watch?v=AEVaK0e1kTE&list=PLziXWRw7-BE1N1aKpGB66uCVwngR3Jl5i&index=1'
-					break
-				elif 'mix 1' in mysong_query or '1' in mysong_query or 'one' in mysong_query:
-					youtube_link = 'https://www.youtube.com/watch?v=pXRviuL6vMY&list=RDpXRviuL6vMY'
-				elif 'mix 2' in mysong_query or '2' in mysong_query or 'two' in mysong_query:
-					youtube_link = 'https://www.youtube.com/watch?v=fKopy74weus&list=RDfKopy74weus'
-				elif 'mix 3' in mysong_query or '3' in mysong_query or 'three' in mysong_query or '3d' in mysong_query:
-					youtube_link = 'https://www.youtube.com/watch?v=S7LCkEJcEag&list=RDS7LCkEJcEag'
-				else:
-					accept_count += 1
-					if accept_count == 3:
-						jw_fn.speak("sorry sir, still could not get you. Try saying play my songs again")
-						break
-					jw_fn.speak("sorry sir, could you please repeat?")
-
-			if youtube_link != '':
-				if jw_fn.process_exists('chrome.exe') == True:
-					if 'youtube.com' in driver.current_url:
-						jw_fn.speak('sure sir, playing it in same tab now')
-						driver.get(youtube_link)
-					else:
-						jw_fn.speak('sure sir, opening youtube in new tab now')
-						driver.execute_script("window.open('https://youtube.com')")
-						jw_ft.update_windows_list('youtube',windows_names_dict,driver)
-						driver.get(youtube_link)
-				else:
-					jw_fn.speak('sure sir, opening youtube now')
-					driver,all_windows,windows_names_dict = jw_ft.start_browser(youtube_link)
-				try:
-					yt_red_button = driver.find_elements_by_xpath('//*[@id="movie_player"]/div[5]/button')[0]
-					yt_red_button.click()
-				except:
-					print("no red play button found")
-					pass
-				driver.maximize_window()
-
-		# Ask to shuffle playlist
-		elif 'shuffle playlist' in query:
-			if jw_fn.process_exists('chrome.exe') == True:
-				if 'youtube.com' in driver.current_url:
-					try:
-						shuffle_button3 = driver.find_elements_by_xpath('/html/body/ytd-app/div/ytd-page-manager/ytd-watch-flexy/div[4]/div[2]/div/ytd-playlist-panel-renderer/div/div[1]/div/div[2]/div[1]/div[1]/ytd-menu-renderer/div/ytd-toggle-button-renderer[2]/a/yt-icon-button/button')
-						shuffle_button3[0].click()
-						jw_fn.speak("shuffling toggled")
-						print("shuffling toggled")
-					except:
-						jw_fn.speak("sorry sir, this is not a playlist that can be shuffled")
 
 		# Switch off John Wattson:
 		elif ('get some rest' in query) or ('get some sleep' in query) or 'rest' in query or 'stop listening' in query:

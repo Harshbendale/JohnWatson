@@ -1,0 +1,40 @@
+beautifulsoup4
+certifi
+chardet
+comtypes
+DateTime
+docopt
+enum34
+future
+idna
+Js2Py
+numpy
+opencv-python
+packaging
+pipwin
+playsound==1.2.2
+psutil
+pycaw
+pyjsparser
+pynput
+pyparsing
+pypiwin32
+PyPrind
+pySmartDL
+pyttsx3
+pytz
+pywin32
+requests
+selenium
+six
+soupsieve
+SpeechRecognition
+subprocess.run
+tzlocal
+urllib3
+zope.interface
+# PyAudio @ file:///F:/Interesting%20things/Zyra/PyAudio-0.2.11-cp38-cp38-win_amd64.whl
+# NOTE: The above pyaudio wheel can not be installed. It is not compatible with this platform. Please follow the answer from the stackoverflow question below:
+# https://stackoverflow.com/questions/70648404/syntaxerror-multiple-exception-types-must-be-parenthesized-pycaw-comtypes
+# Google search: SyntaxError: multiple exception types must be parenthesized pycaw
+# https://www.google.com/search?q=SyntaxError%3A+multiple+exception+types+must+be+parenthesized+pycaw&ei=ma30YZ6TCrbc7_UPpYiD0A8&ved=0ahUKEwjew5nv-9X1AhU27rsIHSXEAPoQ4dUDCA4&uact=5&oq=SyntaxError%3A+multiple+exception+types+must+be+parenthesized+pycaw&gs_lcp=Cgdnd3Mtd2l6EAM6BwgAEEcQsAM6BQgAEIAEOgYIABAWEB5KBAhBGABKBAhGGABQsQFY3Q9g2RNoAXACeACAAU6IAagDkgEBNpgBAKABAcgBCMABAQ&sclient=gws-wiz

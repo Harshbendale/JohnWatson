@@ -16,6 +16,16 @@ for i in range(len(voices)):
 	if i == 0:
 		engine.setProperty('voice', voices[i].id)
 
+# resetting volume and playing audio on start:
+def audio_settings_on_start(keyboard, Key, playsound):
+	for i in range(50):
+		keyboard.press(Key.media_volume_down)
+		keyboard.release(Key.media_volume_down)
+	for i in range(35):
+		keyboard.press(Key.media_volume_up)
+		keyboard.release(Key.media_volume_up)
+	playsound("Audio//Boot_soundclip.mp3")
+
 # to check if the process/application is open in the RAM:
 def process_exists(process_name):
 	call = 'TASKLIST', '/FI', 'imagename eq %s' % process_name
@@ -54,14 +64,14 @@ def wishMe():
 # to adjust mic according to background noise:
 def adjustmic():
 	r = sr.Recognizer()
-	with sr.Microphone() as source:
+	with sr.Microphone(device_index = 2) as source:
 		print('Adjusting mic...')
 		r.adjust_for_ambient_noise(source, duration = 0.5)
 
 # to give command to John:
 def takeCommand():
 	r = sr.Recognizer()
-	with sr.Microphone() as source:
+	with sr.Microphone(device_index=3) as source:
 		print('Listening...')
 		r.pause_threshold = 1
 		r.energy_threshold = 4000
